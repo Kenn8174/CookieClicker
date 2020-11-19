@@ -1,0 +1,64 @@
+﻿@page "/"
+
+<h1>Kenneths Småkage Klikker</h1>
+<label>Kager pr. sek: @Math.Round(cookieClicker.pointsPerSeconds, 2)</label>
+
+<h3>@Math.Floor(cookieClicker.points)</h3>
+
+<button @onclick="getPoints">Click me</button>
+
+@if (cookieClicker.points >= 15 && cookieClicker.isAuto == false)
+{
+    <button @onclick="autoGetPoints">Auto</button>
+}
+
+@foreach (var cookieUpgrade in cookieUpgrades)
+{
+    <button @onclick="() => getUpgrade(cookieUpgrade.UpgradeName)">@cookieUpgrade.UpgradeName</button>
+}
+
+@code{
+    CookieClickerData cookieClicker;
+    List<CookieUpgrades> cookieUpgrades;
+
+    protected override void OnInitialized()
+    {
+        cookieUpgrades = new List<CookieUpgrades>()
+        {
+            new CookieUpgrades{ UpgradeName = "Upgrade 1", UpgradeCost = 20, UpgradeMultiplier = 2},
+            new CookieUpgrades{ UpgradeName = "Upgrade 2", UpgradeCost = 50, UpgradeMultiplier = 4}
+        };
+
+        cookieClicker = new CookieClickerData();
+    }
+
+    public async Task autoGetPoints()
+    {
+        cookieClicker.isAuto = true;
+        cookieClicker.points -= 15;
+        cookieClicker.pointsPerSeconds = 1;
+        while (true)
+        {
+            cookieClicker.points += cookieClicker.pointsPerSeconds;
+            await Task.Delay(1000);
+            StateHasChanged();
+        }
+    }
+
+    public void getPoints()
+    {
+        cookieClicker.points += 1 * cookieClicker.upgrade;
+    }
+
+    public void getUpgrade(string upgradeName)
+    {
+        CookieUpgrades cookieUpgrade = cookieUpgrades.Where(x => x.UpgradeName == upgradeName).FirstOrDefault();
+
+        if (cookieClicker.points > cookieUpgrade.UpgradeCost)
+        {
+            cookieClicker.points -= cookieUpgrade.UpgradeCost;
+            cookieUpgrade.UpgradeCost = cookieUpgrade.UpgradeCost + 50;
+            cookieClicker.pointsPerSeconds += 2;
+        }
+    }
+}
