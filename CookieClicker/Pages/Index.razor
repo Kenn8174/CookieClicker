@@ -1,32 +1,78 @@
 ﻿@page "/"
 
-<h1>Kenneths Småkage Klikker</h1>
-<label>Kager pr. sek: @Math.Round(cookieClicker.pointsPerSeconds, 2)</label>
+<title>@cookieClicker.points.ToString()</title>
 
-<h3>@Math.Floor(cookieClicker.points)</h3>
+<div class="container">
+    <h1>Kenneths Småkage Klikker</h1>
+    <label>Kager pr. sek: @Math.Round(cookieClicker.pointsPerSeconds, 2)</label>
 
-<button @onclick="getPoints">Click me</button>
+    <h3>@Math.Floor(cookieClicker.points)</h3>
 
-@if (cookieClicker.points >= 15 && cookieClicker.isAuto == false)
-{
-    <button @onclick="autoGetPoints">Auto</button>
-}
+    <div class="box col-12">
+        <img class="mx-auto d-block rounded-circle cookie" src="/img/Cookie.png" @onclick="getPoints" />
+    </div>
 
-@foreach (var cookieUpgrade in cookieUpgrades)
-{
-    <button @onclick="() => getUpgrade(cookieUpgrade.UpgradeName)">@cookieUpgrade.UpgradeName</button>
-}
+    @*<button class="btn-primary" @onclick="getPoints">Click me</button>*@
+
+    @if (cookieClicker.points >= 15 && cookieClicker.isAuto == false)
+    {
+        <div class="card text-center">
+            <div class="card-body">
+                <button class="btn btn-success" @onclick="autoGetPoints">Auto</button>
+            </div>
+        </div>
+    }
+
+    <div class="row mt-5">
+        <div class="card-group">
+            @foreach (var cookieUpgrade in cookieUpgrades)
+            {
+                @if (cookieClicker.isAuto)
+                {
+                    <div class="col-auto">
+                        <div class="card">
+                            <h5 class="card-header">@cookieUpgrade.UpgradeName</h5>
+                            <div class="card-body">
+                                <h6 class="card-text">pris: @cookieUpgrade.UpgradeCost kager</h6>
+                                <h6 class="card-text">antal: @cookieUpgrade.UpgradeCount</h6>
+                                <h6 class="card-text">kager/sek: @(Math.Round(cookieUpgrade.UpgradeMultiplier * cookieUpgrade.UpgradeCount, 2))</h6>
+                                @if (cookieClicker.points >= cookieUpgrade.UpgradeCost)
+                                {
+                                    btnState = "success";
+                                    disabled = "";
+                                }
+                                else
+                                {
+                                    btnState = "danger";
+                                    disabled = "disabled";
+                                }
+
+                                <button class="btn btn-@btnState @disabled" @onclick="() => getUpgrade(cookieUpgrade.UpgradeName)">@cookieUpgrade.UpgradeName</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
 
 @code{
     CookieClickerData cookieClicker;
     List<CookieUpgrades> cookieUpgrades;
 
+    public string disabled { get; set; }
+    public string btnState { get; set; }
+
+    public string cookieSize { get; set; }
+
     protected override void OnInitialized()
     {
         cookieUpgrades = new List<CookieUpgrades>()
-        {
-            new CookieUpgrades{ UpgradeName = "Upgrade 1", UpgradeCost = 20, UpgradeMultiplier = 2},
-            new CookieUpgrades{ UpgradeName = "Upgrade 2", UpgradeCost = 50, UpgradeMultiplier = 4}
+{
+            new CookieUpgrades{ UpgradeName = "Bager Jakob", UpgradeCost = 20, UpgradeMultiplier = 0.1, OriginalCost = 20},
+            new CookieUpgrades{ UpgradeName = "Bager Jimmy", UpgradeCost = 50, UpgradeMultiplier = 1, OriginalCost = 50},
+            new CookieUpgrades{ UpgradeName = "Bager Kenneth", UpgradeCost = 100, UpgradeMultiplier = 4, OriginalCost = 100}
         };
 
         cookieClicker = new CookieClickerData();
@@ -40,14 +86,15 @@
         while (true)
         {
             cookieClicker.points += cookieClicker.pointsPerSeconds;
-            await Task.Delay(1000);
             StateHasChanged();
+            await Task.Delay(1000);
         }
     }
 
     public void getPoints()
     {
         cookieClicker.points += 1 * cookieClicker.upgrade;
+        StateHasChanged();
     }
 
     public void getUpgrade(string upgradeName)
@@ -57,8 +104,9 @@
         if (cookieClicker.points > cookieUpgrade.UpgradeCost)
         {
             cookieClicker.points -= cookieUpgrade.UpgradeCost;
-            cookieUpgrade.UpgradeCost = cookieUpgrade.UpgradeCost + 50;
-            cookieClicker.pointsPerSeconds += 2;
+            cookieUpgrade.UpgradeCost = Math.Round((cookieUpgrade.UpgradeCost + cookieUpgrade.OriginalCost) * 1.2);
+            cookieUpgrade.UpgradeCount += 1;
+            cookieClicker.pointsPerSeconds += cookieUpgrade.UpgradeMultiplier;
         }
     }
 }

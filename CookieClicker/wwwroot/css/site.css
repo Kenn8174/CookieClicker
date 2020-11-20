@@ -181,3 +181,17 @@ app {
         display: block;
     }
 }
+
+/*****************************CUSTOM CSS***********************************/
+
+/*.cookie {
+    width: 20vw;
+}
+
+.cookie:hover{
+    width: 19vw;
+}
+
+.cookie, .cookie:hover{
+    transition: width 1s;
+}*/

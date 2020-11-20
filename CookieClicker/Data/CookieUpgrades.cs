@@ -9,6 +9,9 @@ namespace CookieClicker.Data
     {
         public string UpgradeName { get; set; }
         public double UpgradeCost { get; set; }
-        public int UpgradeMultiplier { get; set; }
+        public double UpgradeMultiplier { get; set; }
+        public int UpgradeCount { get; set; }
+        public int OriginalCost { get; set; }
+        //public bool IsDisabled { get; set; } = false;
     }
 }
